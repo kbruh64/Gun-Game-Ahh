@@ -52,6 +52,18 @@ export class FirstPersonController {
     return this.controls.isLocked;
   }
 
+  /**
+   * Register extra solid objects as collision (e.g. crates loaded async after
+   * construction). Computes each one's world-space bounding box.
+   */
+  addColliders(objects = []) {
+    for (const o of objects) {
+      o.updateWorldMatrix(true, true); // ensure transforms are baked before measuring
+      this.colliders.push(o);
+      this._colliderBoxes.push(new THREE.Box3().setFromObject(o));
+    }
+  }
+
   /** Hook the lock/unlock flow up to UI callbacks (show/hide overlay). */
   setupLockUI({ onLock, onUnlock } = {}) {
     this.controls.addEventListener('lock', () => onLock && onLock());

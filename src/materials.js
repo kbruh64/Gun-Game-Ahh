@@ -95,6 +95,10 @@ export function restyleModel(root) {
 
     const styled = makeStylizedMaterial({ color: baseColor });
     if (map && styled.map !== undefined) styled.map = map;
+    // Many stylized assets (e.g. Quaternius) bake color into vertex colors or a
+    // palette texture rather than material.color — preserve those so the model
+    // doesn't turn into a flat grey blob after restyling.
+    if (src && src.vertexColors) styled.vertexColors = true;
     styled.needsUpdate = true;
 
     obj.material = styled;

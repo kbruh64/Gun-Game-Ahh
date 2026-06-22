@@ -1,7 +1,22 @@
-# Drop your `.glb` / `.gltf` models here
+# Models
 
 Files in this folder are served **same-origin**, so they load with zero CORS
 headaches (unlike most Sketchfab embed URLs).
+
+## Included models (all CC0 — public domain, no attribution required)
+These are wired into the game by default via `src/assets.js` → `MODELS`:
+
+| File | What | Source (CC0) |
+|------|------|--------------|
+| `pistol.glb` | First-person weapon viewmodel | "Pistol" by Quaternius (poly.pizza) |
+| `swat.glb` | Enemy / character ("Valorant-ish" tactical agent) | "SWAT" by Quaternius (poly.pizza) |
+| `crate.glb` | Sci-fi cover prop scattered in the arena | "Sci Fi Crate" by Dipper98 (poly.pizza) |
+
+CC0 requires no credit, but the authors are listed above out of courtesy.
+
+## Swapping in your own (e.g. the Sketchfab aesthetic upgrades)
+Sketchfab files can't be hotlinked — download the `.glb` (free account), drop it
+in this folder, and point the matching `MODELS.*.url` in `src/assets.js` at it.
 
 ## How to use a model
 

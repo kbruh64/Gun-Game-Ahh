@@ -20,7 +20,7 @@ import { createComposer } from './postprocessing.js';
 import { Input } from './input.js';
 import { FirstPersonController } from './controls.js';
 import { ShootingSystem } from './shooting.js';
-import { AssetLoader } from './assets.js';
+import { AssetLoader, MODELS } from './assets.js';
 
 // ---- DOM handles ------------------------------------------------------------
 const canvas = document.getElementById('game');
@@ -70,13 +70,35 @@ const shooting = new ShootingSystem(camera, scene, world.targets, {
 // ---- Assets: attach gun viewmodel to the camera -----------------------------
 const assets = new AssetLoader();
 (async () => {
+  // Gun viewmodel (CC0 pistol by Quaternius) parented to the camera.
   const gun = await assets.getGunViewmodel();
-  camera.add(gun); // parent to camera so it follows the view
+  camera.add(gun);
 
-  // EXAMPLE: spawn an extra character model in the world. Uncomment + set a URL
-  // in assets.js MODELS.character to use your own.
-  // const char = await assets.spawnCharacter([4, 0, -18]);
-  // scene.add(char);
+  // Scatter sci-fi crates as cover, then register them with the controller so
+  // the player collides with them (they're loaded async, after construction).
+  const cratePositions = [
+    [-6, 0, -10], [7, 0, -13], [0, 0, -17], [-13, 0, -7], [13, 0, -3],
+  ];
+  const crates = [];
+  for (const p of cratePositions) {
+    const crate = await assets.loadProp(MODELS.crate, p);
+    scene.add(crate);
+    crates.push(crate);
+  }
+  controller.addColliders(crates);
+
+  // Spawn SWAT enemies (CC0 by Quaternius) as additional shootable targets.
+  // world.targets is the same array the ShootingSystem holds, so pushing here
+  // makes them immediately hittable.
+  const enemyPositions = [
+    [-7, 0, -26], [2, 0, -31], [9, 0, -24], [-15, 0, -14], [15, 0, -16],
+  ];
+  for (const p of enemyPositions) {
+    const enemy = await assets.spawnCharacter(p);
+    enemy.userData.isEnemy = true;
+    scene.add(enemy);
+    world.targets.push(enemy);
+  }
 
   loading.classList.add('hidden');
 })();
@@ -100,9 +122,11 @@ function animate() {
   shooting.update(dt, input, controller.isLocked);
   shooting.tickTargetFlashes(dt);
 
-  // Idle bob on the targets so the scene feels alive (purely cosmetic).
+  // Idle bob on the floating sphere targets so the scene feels alive (cosmetic).
+  // Skip the glTF enemies — they have no baseY and should stay grounded.
   const t = clock.elapsedTime;
   for (const target of world.targets) {
+    if (!target.userData.isTarget) continue;
     target.position.y = target.userData.baseY + Math.sin(t * 1.5 + target.position.x) * 0.25;
     target.rotation.y += dt * 0.5;
   }

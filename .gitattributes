@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Never normalize binary 3D model assets (line-ending normalization corrupts them)
+*.glb binary
+*.bin binary
+*.fbx binary

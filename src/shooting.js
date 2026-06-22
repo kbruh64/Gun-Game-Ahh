@@ -94,33 +94,53 @@ export class ShootingSystem {
 
     // Cast from screen center down the camera axis.
     this.raycaster.setFromCamera(this._center, this.camera);
-    const hits = this.raycaster.intersectObjects(this.targets, false);
+    // Recursive so we also hit meshes nested inside loaded glTF groups (enemies).
+    const hits = this.raycaster.intersectObjects(this.targets, true);
 
     if (hits.length > 0) {
       const hit = hits[0];
+      const target = this._resolveTarget(hit.object);
       this._spawnImpact(hit.point);
-      this._reactTarget(hit.object);
+      this._reactTarget(target);
       if (this.hooks.onHit) {
-        this.hooks.onHit({ object: hit.object, point: hit.point, distance: hit.distance });
+        this.hooks.onHit({ object: target, point: hit.point, distance: hit.distance });
       }
     }
   }
 
-  /** Flash a target and give it a little pop when hit. */
-  _reactTarget(obj) {
-    if (!obj.material) return;
-    const mat = obj.material;
-    if (!obj.userData._origEmissive && mat.emissive) {
-      obj.userData._origEmissive = mat.emissive.getHex();
+  /** Walk up from a hit mesh to the registered target (a sphere or enemy group). */
+  _resolveTarget(obj) {
+    let o = obj;
+    while (o) {
+      if (this.targets.includes(o)) return o;
+      o = o.parent;
     }
-    if (mat.emissive) {
-      mat.emissive.setHex(CONFIG.palette.targetHit);
-      mat.emissiveIntensity = 1.5;
-    } else if (mat.color) {
-      mat.color.setHex(CONFIG.palette.targetHit);
+    return obj;
+  }
+
+  /** Flash a target and give it a little pop when hit. Works on meshes or groups. */
+  _reactTarget(target) {
+    target.userData.hp = (target.userData.hp ?? 100) - this.cfg.damage;
+    target.userData._hitFlash = 0.12;
+
+    // Collect every material under the target so glTF enemy groups flash too.
+    const mats = [];
+    if (target.material) mats.push(target.material);
+    else target.traverse((o) => { if (o.isMesh && o.material) mats.push(o.material); });
+    target.userData._flashMats = mats;
+
+    for (const mat of mats) {
+      if (mat.userData._origEmissive === undefined && mat.emissive) {
+        mat.userData._origEmissive = mat.emissive.getHex();
+        mat.userData._origEmissiveIntensity = mat.emissiveIntensity;
+      }
+      if (mat.emissive) {
+        mat.emissive.setHex(CONFIG.palette.targetHit);
+        mat.emissiveIntensity = 1.3;
+      } else if (mat.color) {
+        mat.color.setHex(CONFIG.palette.targetHit);
+      }
     }
-    obj.userData._hitFlash = 0.12;
-    obj.userData.hp = (obj.userData.hp ?? 100) - this.cfg.damage;
   }
 
   /** Small expanding ring at the impact point (works in screen space-ish). */
@@ -149,9 +169,14 @@ export class ShootingSystem {
     for (const t of this.targets) {
       if (t.userData._hitFlash > 0) {
         t.userData._hitFlash -= dt;
-        if (t.userData._hitFlash <= 0 && t.material && t.material.emissive) {
-          t.material.emissive.setHex(t.userData._origEmissive ?? CONFIG.palette.emissiveAccent);
-          t.material.emissiveIntensity = 0.6;
+        if (t.userData._hitFlash <= 0) {
+          const mats = t.userData._flashMats || (t.material ? [t.material] : []);
+          for (const mat of mats) {
+            if (mat.emissive && mat.userData._origEmissive !== undefined) {
+              mat.emissive.setHex(mat.userData._origEmissive);
+              mat.emissiveIntensity = mat.userData._origEmissiveIntensity ?? 0.6;
+            }
+          }
         }
       }
     }
