@@ -1,0 +1,110 @@
+/* -----------------------------------------------------------------------------
+   style.css — HUD / overlay only. The 3D look lives in src/config.js.
+   The stylized UI palette here is meant to echo the in-game accent colors.
+----------------------------------------------------------------------------- */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #10131a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #eaf0ff;
+  cursor: default;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ---- HUD ------------------------------------------------------------------ */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* never block clicks meant for the game */
+  z-index: 10;
+}
+
+/* Crosshair: two thin high-contrast bars with a tiny center gap */
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+}
+.ch {
+  position: absolute;
+  background: #2de1c2; /* teal accent — matches CONFIG.palette.coverB */
+  box-shadow: 0 0 6px rgba(45, 225, 194, 0.9); /* faint glow to echo bloom */
+}
+.ch-v { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
+.ch-h { top: 50%; left: 0; height: 2px; width: 100%; transform: translateY(-50%); }
+
+#score {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- Click-to-play overlay ------------------------------------------------ */
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, rgba(57, 192, 255, 0.12), rgba(16, 19, 26, 0.92));
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+#overlay.hidden { opacity: 0; pointer-events: none; }
+
+.panel { text-align: center; }
+.panel h1 {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #ff5470, #39c0ff, #2de1c2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(57, 192, 255, 0.35));
+}
+.tagline { margin-top: 6px; color: #9fb0d0; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+.controls { margin-top: 28px; color: #c7d3ee; font-size: 15px; }
+.controls strong { color: #2de1c2; }
+.hint {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #ff5470;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* ---- Loading splash ------------------------------------------------------- */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #10131a;
+  color: #39c0ff;
+  font-size: 22px;
+  letter-spacing: 3px;
+  transition: opacity 0.4s ease;
+}
+#loading.hidden { opacity: 0; pointer-events: none; }

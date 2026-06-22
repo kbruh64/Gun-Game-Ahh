@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gun Game Ahh — Stylized 3D Shooter</title>
+  <link rel="stylesheet" href="./style.css" />
+
+  <!--
+    IMPORT MAP
+    ----------------------------------------------------------------------------
+    Lets us write `import * as THREE from 'three'` in the browser with NO build
+    step / bundler. This is what makes the project drop-deploy onto Vercel as
+    plain static files.
+
+    To pin a different Three.js version, change the version number in BOTH URLs.
+    (Addons under 'three/addons/' must match the core 'three' version.)
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- The WebGL canvas everything renders into -->
+  <canvas id="game"></canvas>
+
+  <!-- HUD: crosshair + score -->
+  <div id="hud">
+    <div id="crosshair">
+      <span class="ch ch-v"></span>
+      <span class="ch ch-h"></span>
+    </div>
+    <div id="score">Score: 0</div>
+  </div>
+
+  <!-- Click-to-play overlay (also shown whenever pointer lock is released) -->
+  <div id="overlay">
+    <div class="panel">
+      <h1>GUN GAME AHH</h1>
+      <p class="tagline">Stylized Three.js FPS</p>
+      <p class="controls">
+        <strong>WASD</strong> move &nbsp;·&nbsp; <strong>Mouse</strong> look
+        &nbsp;·&nbsp; <strong>Shift</strong> sprint &nbsp;·&nbsp;
+        <strong>Space</strong> jump &nbsp;·&nbsp; <strong>Click</strong> shoot
+      </p>
+      <p class="hint">Click anywhere to play</p>
+    </div>
+  </div>
+
+  <!-- Initial asset-loading splash -->
+  <div id="loading">Loading…</div>
+
+  <!-- type="module" is required for the import map + ES module imports -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
